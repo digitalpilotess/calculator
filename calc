@@ -1,0 +1,87 @@
+import pygame
+import sys
+
+pygame.init()
+
+# Цвета
+WHITE = (255, 255, 255)
+GRAY = (192, 192, 192)
+BLACK = (0, 0, 0)
+
+# Инициализация экрана
+screen = pygame.display.set_mode((500, 700))
+pygame.display.set_caption("Калькулятор")
+
+# Шрифты
+font = pygame.font.Font(None, 36)
+input_text = ""
+result = ""
+
+# Создание кнопок
+buttons = []
+operators = ['7', '8', '9', '+', '4', '5', '6', '-', '1', '2', '3', '*', 'C', '0', '=', '/', '+/-']
+for i in range(16):
+    row, col = divmod(i, 4)
+    buttons.append(pygame.Rect(50 + col * 100, 250 + row * 100, 80, 80))
+
+# Главный цикл
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
+            elif event.key == pygame.K_RETURN:
+                try:
+                    result = str(eval(input_text))
+                except:
+                    result = "Ошибка"
+                input_text = result
+            elif event.key == pygame.K_BACKSPACE:
+                input_text = input_text[:-1]
+            elif event.unicode in operators:
+                input_text += event.unicode
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = event.pos
+            for i, button in enumerate(buttons):
+                if button.collidepoint(mouse_pos):
+                    if operators[i] == 'C':
+                        input_text = ""
+                        result = ""
+                    elif operators[i] == '=':
+                        try:
+                            result = str(eval(input_text))
+                        except:
+                            result = "Ошибка"
+                        input_text = result
+                    else:
+                        input_text += operators[i]
+                        result = ""
+
+    # Очистка экрана
+    screen.fill(WHITE)
+
+    # Отображение введенного текста
+    input_surface = font.render(input_text, True, BLACK)
+    input_rect = input_surface.get_rect(center=(200, 100))
+    screen.blit(input_surface, input_rect)
+
+    # Отображение результата
+    result_surface = font.render(result, True, BLACK)
+    result_rect = result_surface.get_rect(center=(200, 200))
+    screen.blit(result_surface, result_rect)
+
+    # Отображение кнопок
+    for i, button in enumerate(buttons):
+        pygame.draw.rect(screen, GRAY, button)
+        button_text = font.render(operators[i], True, BLACK)
+        button_rect = button_text.get_rect(center=button.center)
+        screen.blit(button_text, button_rect)
+
+    pygame.display.flip()
+
+pygame.quit()
+sys.exit()
